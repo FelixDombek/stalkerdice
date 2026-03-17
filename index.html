@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survival Dice Roller</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #2d2d2d; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 320px; text-align: center; }
+        h2 { margin-top: 0; color: #4caf50; }
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        input { width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; font-size: 1.1rem; text-align: center; }
+        button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #45a049; transform: translateY(-2px); }
+        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; }
+        .stat-val { font-weight: bold; color: #ffcc00; }
+        .weighted { color: #888; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Dice Roller</h2>
+    <div class="input-row">
+        <span>Green Dice:</span>
+        <input type="number" id="g" value="1" min="0">
+    </div>
+    <div class="input-row">
+        <span>Yellow Dice:</span>
+        <input type="number" id="y" value="1" min="0">
+    </div>
+    <button onclick="roll()">ROLL DICE</button>
+    <div id="out" class="results">Enter dice and roll!</div>
+</div>
+
+<script>
+const greenFaces = [
+    {stars: 2, masks: 0, weighted: 2},
+    {stars: 3, masks: 0, weighted: 0},
+    {stars: 2, masks: 0, weighted: 0},
+    {stars: 1, masks: 0, weighted: 0},
+    {stars: 1, masks: 0, weighted: 0},
+    {stars: 0, masks: 0, weighted: 0}
+];
+const yellowFaces = [
+    {stars: 0, masks: 2, weighted: 0},
+    {stars: 1, masks: 1, weighted: 0},
+    {stars: 1, masks: 1, weighted: 0},
+    {stars: 2, masks: 0, weighted: 0},
+    {stars: 0, masks: 1, weighted: 0},
+    {stars: 1, masks: 0, weighted: 0}
+];
+
+function rollDice(faces, count) {
+    let stars = 0, masks = 0, weighted = 0;
+    for (let i = 0; i < count; i++) {
+        const face = faces[Math.floor(Math.random() * 6)];
+        stars += face.stars;
+        masks += face.masks;
+        weighted += face.weighted;
+    }
+    return {stars, masks, weighted};
+}
+
+function roll() {
+    const greenCount = parseInt(document.getElementById('g').value, 10) || 0;
+    const yellowCount = parseInt(document.getElementById('y').value, 10) || 0;
+    const green = rollDice(greenFaces, greenCount);
+    const yellow = rollDice(yellowFaces, yellowCount);
+    const stars = green.stars + yellow.stars;
+    const masks = green.masks + yellow.masks;
+    const weightedStars = stars + green.weighted;
+    document.getElementById('out').innerHTML = `
+        Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>
+        Gas Masks: <span class="stat-val">${masks}</span>
+    `;
+}
+</script>
+</body>
+</html>
