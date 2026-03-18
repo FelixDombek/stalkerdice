@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Survival Dice Roller</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -23,6 +24,8 @@
         .face-1 { font-size: 1.8rem; }
         .face-2 { font-size: 1.1rem; }
         .face-3 span { display: block; font-size: 0.85rem; line-height: 1.4; }
+        .weighted-face { background: linear-gradient(#fff, #fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; color: #1b5e20; }
+        .weighted { color: #888; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -42,12 +45,12 @@
 
 <script>
 const greenFaces = [
-    {stars: 2, masks: 0},
-    {stars: 3, masks: 0},
-    {stars: 2, masks: 0},
-    {stars: 1, masks: 0},
-    {stars: 1, masks: 0},
-    {stars: 0, masks: 0}
+    {stars: 2, masks: 0, weighted: 2},
+    {stars: 3, masks: 0, weighted: 0},
+    {stars: 2, masks: 0, weighted: 0},
+    {stars: 1, masks: 0, weighted: 0},
+    {stars: 1, masks: 0, weighted: 0},
+    {stars: 0, masks: 0, weighted: 0}
 ];
 const yellowFaces = [
     {stars: 0, masks: 2},
@@ -69,19 +72,21 @@ function dieFaceHTML(face, dieClass) {
     } else {
         content = symbols;
     }
-    return `<div class="die ${dieClass} face-${total}">${content}</div>`;
+    const extraClass = face.weighted ? ' weighted-face' : '';
+    return `<div class="die ${dieClass} face-${total}${extraClass}">${content}</div>`;
 }
 
 function rollDice(faces, count) {
-    let stars = 0, masks = 0;
+    let stars = 0, masks = 0, weighted = 0;
     const results = [];
     for (let i = 0; i < count; i++) {
         const face = faces[Math.floor(Math.random() * 6)];
         stars += face.stars;
         masks += face.masks;
+        weighted += face.weighted || 0;
         results.push(face);
     }
-    return {stars, masks, results};
+    return {stars, masks, weighted, results};
 }
 
 function roll() {
@@ -91,6 +96,7 @@ function roll() {
     const yellow = rollDice(yellowFaces, yellowCount);
     const stars = green.stars + yellow.stars;
     const masks = green.masks + yellow.masks;
+    const weightedStars = stars + green.weighted;
 
     let html = '';
     if (green.results.length > 0) {
@@ -103,7 +109,7 @@ function roll() {
         yellow.results.forEach(face => { html += dieFaceHTML(face, 'yellow-die'); });
         html += '</div></div>';
     }
-    html += `<div class="totals">Stars: <span class="stat-val">${stars}</span><br>Gas Masks: <span class="stat-val">${masks}</span></div>`;
+    html += `<div class="totals">Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span></div>`;
     document.getElementById('out').innerHTML = html;
 }
 </script>
