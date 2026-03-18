@@ -24,21 +24,9 @@
         .face-3 span { display: block; font-size: 0.85rem; line-height: 1.4; }
         .weighted-face { background: linear-gradient(#fff,#fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; color: #1b5e20; }
 
-        /* Selector dice – half size when not selected */
-        .die-selector .die { width: 26px; height: 26px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; transition: all 0.12s ease; }
-        .die-selector .die.face-0 { font-size: 0.7rem; }
-        .die-selector .die.face-1 { font-size: 0.9rem; }
-        .die-selector .die.face-2 { font-size: 0.55rem; }
-        .die-selector .die.face-3 span { font-size: 0.43rem; }
-        .die-selector .die.weighted-face { background: linear-gradient(#fff,#fff) 4px 4px / calc(100% - 8px) calc(100% - 8px) no-repeat, #2e7d32; }
-
-        /* Selected (full-size) selector dice */
-        .die-selector .die.selected { width: 52px; height: 52px; border-radius: 9px; }
-        .die-selector .die.selected.face-0 { font-size: 1.4rem; }
-        .die-selector .die.selected.face-1 { font-size: 1.8rem; }
-        .die-selector .die.selected.face-2 { font-size: 1.1rem; }
-        .die-selector .die.selected.face-3 span { font-size: 0.85rem; }
-        .die-selector .die.selected.weighted-face { background: linear-gradient(#fff,#fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; }
+        /* Selector dice – always occupy full slot; scale from center */
+        .die-selector .die { cursor: pointer; transform: scale(0.5); transition: transform 0.12s ease; }
+        .die-selector .die.selected { transform: scale(1); }
 
         button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
         button:hover { background: #45a049; transform: translateY(-2px); }
@@ -52,7 +40,7 @@
         .dice-group-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
         .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 
-        /* Median / expected-value field */
+        /* Mean / expected-value field */
         .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; }
         .median-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
         .median-stats .stat-val { color: #b07a10; }
@@ -203,7 +191,7 @@ function updateMedian() {
     const masks    = yellowCount * ym.masks;
     const wStars   = stars + greenCount * gm.weighted;
     el.innerHTML = `
-        <div class="median-label">Median per roll</div>
+        <div class="median-label">Mean per roll</div>
         Stars: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span><br>
         Gas Masks: <span class="stat-val">${masks.toFixed(1)}</span>
     `;
