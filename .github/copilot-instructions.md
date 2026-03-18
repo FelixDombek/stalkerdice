@@ -38,7 +38,7 @@ The STALKER board game uses two types of custom six-sided dice:
 - ☠ (1 gas mask)
 - ★ (1 star)
 
-Stars (★) are successes; gas masks (☠) are a hazard resource. The "weighted" green face has a white inner square and counts as extra stars in certain game contexts.
+Stars (★) are successes; gas masks (☠) trigger special weapon features, e.g. extra damage. The "weighted" green face has a white inner square and counts as extra stars when shooting a target within the optimum range of a weapon.
 
 ## Coding Conventions
 
