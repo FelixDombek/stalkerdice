@@ -12,7 +12,17 @@
         button:hover { background: #45a049; transform: translateY(-2px); }
         .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; }
         .stat-val { font-weight: bold; color: #ffcc00; }
-        .weighted { color: #888; font-size: 0.9rem; }
+        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
+        .dice-group { margin-bottom: 10px; }
+        .dice-group-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+        .die { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 9px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); line-height: 1; }
+        .green-die { background: #2e7d32; color: #fff; }
+        .yellow-die { background: #f9a825; color: #1a1a1a; }
+        .face-0 { font-size: 1.4rem; opacity: 0.4; }
+        .face-1 { font-size: 1.8rem; }
+        .face-2 { font-size: 1.1rem; }
+        .face-3 span { display: block; font-size: 0.85rem; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -32,31 +42,46 @@
 
 <script>
 const greenFaces = [
-    {stars: 2, masks: 0, weighted: 2},
-    {stars: 3, masks: 0, weighted: 0},
-    {stars: 2, masks: 0, weighted: 0},
-    {stars: 1, masks: 0, weighted: 0},
-    {stars: 1, masks: 0, weighted: 0},
-    {stars: 0, masks: 0, weighted: 0}
+    {stars: 2, masks: 0},
+    {stars: 3, masks: 0},
+    {stars: 2, masks: 0},
+    {stars: 1, masks: 0},
+    {stars: 1, masks: 0},
+    {stars: 0, masks: 0}
 ];
 const yellowFaces = [
-    {stars: 0, masks: 2, weighted: 0},
-    {stars: 1, masks: 1, weighted: 0},
-    {stars: 1, masks: 1, weighted: 0},
-    {stars: 2, masks: 0, weighted: 0},
-    {stars: 0, masks: 1, weighted: 0},
-    {stars: 1, masks: 0, weighted: 0}
+    {stars: 0, masks: 2},
+    {stars: 1, masks: 1},
+    {stars: 1, masks: 1},
+    {stars: 2, masks: 0},
+    {stars: 0, masks: 1},
+    {stars: 1, masks: 0}
 ];
 
+function dieFaceHTML(face, dieClass) {
+    const total = face.stars + face.masks;
+    const symbols = '★'.repeat(face.stars) + '☠'.repeat(face.masks);
+    let content;
+    if (total === 0) {
+        content = '—';
+    } else if (total === 3) {
+        content = `<span>${symbols.slice(0, 2)}</span><span>${symbols.slice(2)}</span>`;
+    } else {
+        content = symbols;
+    }
+    return `<div class="die ${dieClass} face-${total}">${content}</div>`;
+}
+
 function rollDice(faces, count) {
-    let stars = 0, masks = 0, weighted = 0;
+    let stars = 0, masks = 0;
+    const results = [];
     for (let i = 0; i < count; i++) {
         const face = faces[Math.floor(Math.random() * 6)];
         stars += face.stars;
         masks += face.masks;
-        weighted += face.weighted;
+        results.push(face);
     }
-    return {stars, masks, weighted};
+    return {stars, masks, results};
 }
 
 function roll() {
@@ -66,11 +91,20 @@ function roll() {
     const yellow = rollDice(yellowFaces, yellowCount);
     const stars = green.stars + yellow.stars;
     const masks = green.masks + yellow.masks;
-    const weightedStars = stars + green.weighted;
-    document.getElementById('out').innerHTML = `
-        Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>
-        Gas Masks: <span class="stat-val">${masks}</span>
-    `;
+
+    let html = '';
+    if (green.results.length > 0) {
+        html += '<div class="dice-group"><div class="dice-group-label">Green Dice</div><div class="dice-faces">';
+        green.results.forEach(face => { html += dieFaceHTML(face, 'green-die'); });
+        html += '</div></div>';
+    }
+    if (yellow.results.length > 0) {
+        html += '<div class="dice-group"><div class="dice-group-label">Yellow Dice</div><div class="dice-faces">';
+        yellow.results.forEach(face => { html += dieFaceHTML(face, 'yellow-die'); });
+        html += '</div></div>';
+    }
+    html += `<div class="totals">Stars: <span class="stat-val">${stars}</span><br>Gas Masks: <span class="stat-val">${masks}</span></div>`;
+    document.getElementById('out').innerHTML = html;
 }
 </script>
 </body>
