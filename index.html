@@ -45,25 +45,25 @@
 
 <script>
 const greenFaces = [
-    {stars: 2, masks: 0, weighted: 2},
-    {stars: 3, masks: 0, weighted: 0},
-    {stars: 2, masks: 0, weighted: 0},
-    {stars: 1, masks: 0, weighted: 0},
-    {stars: 1, masks: 0, weighted: 0},
-    {stars: 0, masks: 0, weighted: 0}
+    {stars: 2, weighted: 2},
+    {stars: 3},
+    {stars: 2},
+    {stars: 1},
+    {stars: 1},
+    {}
 ];
 const yellowFaces = [
-    {stars: 0, masks: 2},
+    {masks: 2},
     {stars: 1, masks: 1},
     {stars: 1, masks: 1},
-    {stars: 2, masks: 0},
-    {stars: 0, masks: 1},
-    {stars: 1, masks: 0}
+    {stars: 2},
+    {masks: 1},
+    {stars: 1}
 ];
 
 function dieFaceHTML(face, dieClass) {
-    const total = face.stars + face.masks;
-    const symbols = '★'.repeat(face.stars) + '☠'.repeat(face.masks);
+    const total = (face.stars || 0) + (face.masks || 0);
+    const symbols = '★'.repeat(face.stars || 0) + '☠'.repeat(face.masks || 0);
     let content;
     if (total === 0) {
         content = '—';
@@ -81,8 +81,8 @@ function rollDice(faces, count) {
     const results = [];
     for (let i = 0; i < count; i++) {
         const face = faces[Math.floor(Math.random() * 6)];
-        stars += face.stars;
-        masks += face.masks;
+        stars += face.stars || 0;
+        masks += face.masks || 0;
         weighted += face.weighted || 0;
         results.push(face);
     }
