@@ -18,6 +18,7 @@ README.md        – project readme
 suggestions.md   – backlog of improvement ideas
 .github/
   workflows/
+    deploy.yml              – deploys main branch to gh-pages on push
     pr-preview.yml          – deploys PR preview pages to GitHub Pages
   copilot-instructions.md   – coding-agent instructions (Copilot, etc.)
 llms.txt                    – this file
@@ -27,7 +28,7 @@ llms.txt                    – this file
 
 - Plain HTML5 / CSS3 / JavaScript (ES6+)
 - No framework, no build tool, no package manager
-- Hosted on GitHub Pages (root of `main` branch)
+- Hosted on GitHub Pages (served from `gh-pages` branch, deployed automatically from `main`)
 
 ## Dice mechanics
 

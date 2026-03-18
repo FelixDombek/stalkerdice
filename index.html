@@ -32,16 +32,15 @@
         button:hover { background: #45a049; transform: translateY(-2px); }
 
         /* Roll results */
-        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; }
+        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; height: 200px; overflow-y: auto; }
         .stat-val { font-weight: bold; color: #ffcc00; }
         .weighted { color: #d4890a; font-size: 1.05rem; }
         .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
         .dice-group { margin-bottom: 10px; }
-        .dice-group-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
         .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 
         /* Mean / expected-value field */
-        .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; }
+        .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; height: 72px; overflow-y: auto; }
         .median-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
         .median-stats .stat-val { color: #b07a10; }
         .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
@@ -157,12 +156,12 @@ function roll() {
 
     let html = '';
     if (green.results.length > 0) {
-        html += '<div class="dice-group"><div class="dice-group-label">Green Dice</div><div class="dice-faces">';
+        html += '<div class="dice-group"><div class="dice-faces">';
         green.results.forEach(face => { html += dieFaceHTML(face, 'green-die'); });
         html += '</div></div>';
     }
     if (yellow.results.length > 0) {
-        html += '<div class="dice-group"><div class="dice-group-label">Yellow Dice</div><div class="dice-faces">';
+        html += '<div class="dice-group"><div class="dice-faces">';
         yellow.results.forEach(face => { html += dieFaceHTML(face, 'yellow-die'); });
         html += '</div></div>';
     }
