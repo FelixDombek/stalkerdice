@@ -5,18 +5,16 @@
     <title>Survival Dice Roller</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #2d2d2d; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 320px; text-align: center; }
+        .container { background: #2d2d2d; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 450px; text-align: center; overflow: hidden; }
+        .container-inner { padding: 2rem; }
         h2 { margin-top: 0; color: #4caf50; }
-        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        input { width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; font-size: 1.1rem; text-align: center; }
-        button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #45a049; transform: translateY(-2px); }
-        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; }
-        .stat-val { font-weight: bold; color: #ffcc00; }
-        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
-        .dice-group { margin-bottom: 10px; }
-        .dice-group-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-        .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+
+        /* Die selectors */
+        .selector-group { margin-bottom: 14px; }
+        .selector-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; text-align: left; }
+        .die-selector { display: flex; justify-content: center; gap: 5px; align-items: center; padding: 4px 0; }
+
+        /* Base die (roll results) */
         .die { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 9px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); line-height: 1; }
         .green-die { background: #2e7d32; color: #fff; }
         .yellow-die { background: #f9a825; color: #1a1a1a; }
@@ -24,23 +22,59 @@
         .face-1 { font-size: 1.8rem; }
         .face-2 { font-size: 1.1rem; }
         .face-3 span { display: block; font-size: 0.85rem; line-height: 1.4; }
-        .weighted-face { background: linear-gradient(#fff, #fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; color: #1b5e20; }
-        .weighted { color: #888; font-size: 0.9rem; }
+        .weighted-face { background: linear-gradient(#fff,#fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; color: #1b5e20; }
+
+        /* Selector dice – half size when not selected */
+        .die-selector .die { width: 26px; height: 26px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; transition: all 0.12s ease; }
+        .die-selector .die.face-0 { font-size: 0.7rem; }
+        .die-selector .die.face-1 { font-size: 0.9rem; }
+        .die-selector .die.face-2 { font-size: 0.55rem; }
+        .die-selector .die.face-3 span { font-size: 0.43rem; }
+        .die-selector .die.weighted-face { background: linear-gradient(#fff,#fff) 4px 4px / calc(100% - 8px) calc(100% - 8px) no-repeat, #2e7d32; }
+
+        /* Selected (full-size) selector dice */
+        .die-selector .die.selected { width: 52px; height: 52px; border-radius: 9px; }
+        .die-selector .die.selected.face-0 { font-size: 1.4rem; }
+        .die-selector .die.selected.face-1 { font-size: 1.8rem; }
+        .die-selector .die.selected.face-2 { font-size: 1.1rem; }
+        .die-selector .die.selected.face-3 span { font-size: 0.85rem; }
+        .die-selector .die.selected.weighted-face { background: linear-gradient(#fff,#fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; }
+
+        button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #45a049; transform: translateY(-2px); }
+
+        /* Roll results */
+        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; }
+        .stat-val { font-weight: bold; color: #ffcc00; }
+        .weighted { color: #d4890a; font-size: 1.05rem; }
+        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
+        .dice-group { margin-bottom: 10px; }
+        .dice-group-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+
+        /* Median / expected-value field */
+        .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; }
+        .median-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .median-stats .stat-val { color: #b07a10; }
+        .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Dice Roller</h2>
-    <div class="input-row">
-        <span>Green Dice:</span>
-        <input type="number" id="g" value="1" min="0">
+    <div class="container-inner">
+        <h2>Dice Roller</h2>
+        <div class="selector-group">
+            <div class="selector-label">Green Dice</div>
+            <div class="die-selector" id="g-selector"></div>
+        </div>
+        <div class="selector-group">
+            <div class="selector-label">Yellow Dice</div>
+            <div class="die-selector" id="y-selector"></div>
+        </div>
+        <button onclick="roll()">ROLL DICE</button>
+        <div id="out" class="results">Click dice above to select, then roll!</div>
     </div>
-    <div class="input-row">
-        <span>Yellow Dice:</span>
-        <input type="number" id="y" value="1" min="0">
-    </div>
-    <button onclick="roll()">ROLL DICE</button>
-    <div id="out" class="results">Enter dice and roll!</div>
+    <div id="median" class="median-stats"></div>
 </div>
 
 <script>
@@ -61,19 +95,56 @@ const yellowFaces = [
     {stars: 1}
 ];
 
-function dieFaceHTML(face, dieClass) {
+let greenCount = 0;
+let yellowCount = 0;
+
+function faceContent(face) {
     const total = (face.stars || 0) + (face.masks || 0);
     const symbols = '★'.repeat(face.stars || 0) + '☠'.repeat(face.masks || 0);
-    let content;
-    if (total === 0) {
-        content = '—';
-    } else if (total === 3) {
-        content = `<span>${symbols.slice(0, 2)}</span><span>${symbols.slice(2)}</span>`;
-    } else {
-        content = symbols;
-    }
+    if (total === 0) return {total, html: '—'};
+    if (total === 3) return {total, html: `<span>${symbols.slice(0, 2)}</span><span>${symbols.slice(2)}</span>`};
+    return {total, html: symbols};
+}
+
+function dieFaceHTML(face, dieClass) {
+    const {total, html} = faceContent(face);
     const extraClass = face.weighted ? ' weighted-face' : '';
-    return `<div class="die ${dieClass} face-${total}${extraClass}">${content}</div>`;
+    return `<div class="die ${dieClass} face-${total}${extraClass}">${html}</div>`;
+}
+
+function buildSelectors() {
+    buildSelector(greenFaces, 'green-die', 'g-selector', 'green');
+    buildSelector(yellowFaces, 'yellow-die', 'y-selector', 'yellow');
+}
+
+function buildSelector(faces, dieClass, containerId, color) {
+    const container = document.getElementById(containerId);
+    faces.forEach((face, idx) => {
+        const {total, html} = faceContent(face);
+        const extraClass = face.weighted ? ' weighted-face' : '';
+        const div = document.createElement('div');
+        div.className = `die ${dieClass} face-${total}${extraClass}`;
+        div.innerHTML = html;
+        div.addEventListener('click', () => selectDice(color, idx + 1));
+        container.appendChild(div);
+    });
+}
+
+function selectDice(color, pos) {
+    if (color === 'green') {
+        greenCount = (greenCount === pos) ? 0 : pos;
+        updateSelector('g-selector', greenCount);
+    } else {
+        yellowCount = (yellowCount === pos) ? 0 : pos;
+        updateSelector('y-selector', yellowCount);
+    }
+    updateMedian();
+}
+
+function updateSelector(containerId, count) {
+    document.querySelectorAll(`#${containerId} .die`).forEach((die, i) => {
+        die.classList.toggle('selected', i + 1 <= count);
+    });
 }
 
 function rollDice(faces, count) {
@@ -90,8 +161,6 @@ function rollDice(faces, count) {
 }
 
 function roll() {
-    const greenCount = parseInt(document.getElementById('g').value, 10) || 0;
-    const yellowCount = parseInt(document.getElementById('y').value, 10) || 0;
     const green = rollDice(greenFaces, greenCount);
     const yellow = rollDice(yellowFaces, yellowCount);
     const stars = green.stars + yellow.stars;
@@ -112,6 +181,36 @@ function roll() {
     html += `<div class="totals">Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span></div>`;
     document.getElementById('out').innerHTML = html;
 }
+
+function calcMean(faces) {
+    const n = faces.length;
+    return {
+        stars:    faces.reduce((s, f) => s + (f.stars    || 0), 0) / n,
+        masks:    faces.reduce((s, f) => s + (f.masks    || 0), 0) / n,
+        weighted: faces.reduce((s, f) => s + (f.weighted || 0), 0) / n
+    };
+}
+
+function updateMedian() {
+    const el = document.getElementById('median');
+    if (greenCount === 0 && yellowCount === 0) {
+        el.innerHTML = '<div class="median-label">Select dice above to see expected values</div>';
+        return;
+    }
+    const gm = calcMean(greenFaces);
+    const ym = calcMean(yellowFaces);
+    const stars    = greenCount * gm.stars  + yellowCount * ym.stars;
+    const masks    = yellowCount * ym.masks;
+    const wStars   = stars + greenCount * gm.weighted;
+    el.innerHTML = `
+        <div class="median-label">Median per roll</div>
+        Stars: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span><br>
+        Gas Masks: <span class="stat-val">${masks.toFixed(1)}</span>
+    `;
+}
+
+buildSelectors();
+updateMedian();
 </script>
 </body>
 </html>
