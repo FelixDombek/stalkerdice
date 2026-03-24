@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Yellow die face: one gas mask -->
+  <!-- Gas mask: oval face-piece, two round goggle lenses, three filter-vent slats -->
+  <rect width="100" height="100" rx="9" fill="#f9a825"/>
+  <!-- Mask centered at (50, 50) -->
+  <g transform="translate(50,50)">
+    <!-- Face-piece body -->
+    <ellipse cx="0" cy="0" rx="32" ry="40" fill="#1a1a1a"/>
+    <!-- Left goggle lens (die background shows through) -->
+    <circle cx="-16" cy="-10" r="11" fill="#f9a825"/>
+    <!-- Right goggle lens -->
+    <circle cx="16" cy="-10" r="11" fill="#f9a825"/>
+    <!-- Breathing filter: three horizontal vent slats -->
+    <rect x="-13" y="19" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
+    <rect x="-13" y="24" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
+    <rect x="-13" y="29" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
+  </g>
+</svg>
