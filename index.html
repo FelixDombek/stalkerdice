@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survival Dice Roller</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4caf50">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: #2d2d2d; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 450px; text-align: center; overflow: hidden; }
@@ -197,6 +200,10 @@ function updateMedian() {
 
 buildSelectors();
 updateMedian();
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW registration failed:', err));
+}
 </script>
 </body>
 </html>
