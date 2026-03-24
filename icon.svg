@@ -13,16 +13,14 @@
     <text x="128" y="256" font-size="220" text-anchor="middle" dominant-baseline="central" font-family="serif" fill="white">★</text>
     <!-- Gas mask centered in right half (384, 256); scale = 200/64 ≈ 3.125 to fill ~200 px of the 256-wide half -->
     <g transform="translate(384,256) scale(3.125)">
-      <!-- Mask body -->
-      <ellipse cx="0" cy="0" rx="32" ry="40" fill="#1a1a1a"/>
-      <!-- Left goggle lens (shows die background) -->
-      <circle cx="-16" cy="-10" r="11" fill="#f9a825"/>
-      <!-- Right goggle lens -->
-      <circle cx="16" cy="-10" r="11" fill="#f9a825"/>
-      <!-- Breathing filter vents -->
-      <rect x="-13" y="19" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
-      <rect x="-13" y="24" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
-      <rect x="-13" y="29" width="26" height="3" rx="1.5" fill="#f9a825" opacity="0.85"/>
+      <!-- Pear-shaped face piece: wide dome at top, narrows toward chin -->
+      <path d="M 0,-32 C 26,-32 36,-14 32,6 C 28,22 16,24 0,24 C -16,24 -28,22 -32,6 C -36,-14 -26,-32 0,-32 Z" fill="#1a1a1a"/>
+      <!-- Left goggle hole (shows die background) -->
+      <circle cx="-13" cy="-8" r="9" fill="#f9a825"/>
+      <!-- Right goggle hole -->
+      <circle cx="13" cy="-8" r="9" fill="#f9a825"/>
+      <!-- Circular filter canister below face piece -->
+      <circle cx="0" cy="33" r="10" fill="#1a1a1a"/>
     </g>
   </g>
 </svg>
