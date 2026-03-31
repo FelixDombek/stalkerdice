@@ -46,13 +46,14 @@
         /* Reroll split button */
         #btn-area { display: flex; gap: 4px; }
         #btn-area button { width: auto; }
+        #roll-btn { flex: 1; }
         #reroll-btn { flex: 17 1 0; }
-        #unpin-btn { flex: 3 1 0; }
+        #deselect-btn { flex: 3 1 0; }
 
         /* Result dice interaction */
         .result-die { cursor: pointer; transition: box-shadow 0.15s ease, opacity 0.15s ease; }
-        .result-die.pinned { box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,0.4); }
-        .has-pinned .result-die:not(.pinned) { opacity: 0.45; }
+        .result-die.selected { box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,0.4); }
+        .has-selected .result-die:not(.selected) { opacity: 0.45; }
 
         /* Mean / expected-value field */
         .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; height: 72px; overflow-y: auto; }
@@ -99,8 +100,8 @@ let greenCount = 0;
 let yellowCount = 0;
 let lastGreenResults = [];
 let lastYellowResults = [];
-let pinnedGreen = [];
-let pinnedYellow = [];
+let selectedGreen = [];
+let selectedYellow = [];
 
 function faceContent(face) {
     const total = (face.stars || 0) + (face.masks || 0);
@@ -164,23 +165,23 @@ function rollDice(faces, count) {
     return {stars, masks, weighted, results};
 }
 
-function hasPinnedDice() {
-    return pinnedGreen.some(Boolean) || pinnedYellow.some(Boolean);
+function hasSelectedDice() {
+    return selectedGreen.some(Boolean) || selectedYellow.some(Boolean);
 }
 
-function togglePin(color, idx) {
+function toggleSelect(color, idx) {
     if (color === 'green') {
-        pinnedGreen[idx] = !pinnedGreen[idx];
+        selectedGreen[idx] = !selectedGreen[idx];
     } else {
-        pinnedYellow[idx] = !pinnedYellow[idx];
+        selectedYellow[idx] = !selectedYellow[idx];
     }
     renderResults();
     updateButtonState();
 }
 
-function unpinAll() {
-    pinnedGreen.fill(false);
-    pinnedYellow.fill(false);
+function deselectAll() {
+    selectedGreen.fill(false);
+    selectedYellow.fill(false);
     renderResults();
     updateButtonState();
 }
@@ -188,17 +189,17 @@ function unpinAll() {
 function updateButtonState() {
     const btnArea = document.getElementById('btn-area');
     btnArea.innerHTML = '';
-    if (hasPinnedDice()) {
+    if (hasSelectedDice()) {
         const rerollBtn = document.createElement('button');
         rerollBtn.id = 'reroll-btn';
-        rerollBtn.textContent = 'REROLL';
+        rerollBtn.textContent = 'REROLL SELECTED';
         rerollBtn.addEventListener('click', reroll);
-        const unpinBtn = document.createElement('button');
-        unpinBtn.id = 'unpin-btn';
-        unpinBtn.textContent = '✕';
-        unpinBtn.addEventListener('click', unpinAll);
+        const deselectBtn = document.createElement('button');
+        deselectBtn.id = 'deselect-btn';
+        deselectBtn.textContent = '✕';
+        deselectBtn.addEventListener('click', deselectAll);
         btnArea.appendChild(rerollBtn);
-        btnArea.appendChild(unpinBtn);
+        btnArea.appendChild(deselectBtn);
     } else {
         const rollBtn = document.createElement('button');
         rollBtn.id = 'roll-btn';
@@ -208,11 +209,11 @@ function updateButtonState() {
     }
 }
 
-function makeDieElement(face, dieClass, color, idx, pinned) {
+function makeDieElement(face, dieClass, color, idx, selected) {
     const {total, html} = faceContent(face);
     const extraClass = face.weighted ? ' weighted-face' : '';
     const div = document.createElement('div');
-    div.className = `die ${dieClass} face-${total}${extraClass}${pinned ? ' pinned' : ''} result-die`;
+    div.className = `die ${dieClass} face-${total}${extraClass}${selected ? ' selected' : ''} result-die`;
     div.innerHTML = html;
     div.dataset.color = color;
     div.dataset.idx = idx;
@@ -233,7 +234,7 @@ function renderResults() {
         group.className = 'dice-group';
         const faces = document.createElement('div');
         faces.className = 'dice-faces';
-        lastGreenResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'green-die', 'green', i, pinnedGreen[i])));
+        lastGreenResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'green-die', 'green', i, selectedGreen[i])));
         group.appendChild(faces);
         outEl.appendChild(group);
     }
@@ -242,7 +243,7 @@ function renderResults() {
         group.className = 'dice-group';
         const faces = document.createElement('div');
         faces.className = 'dice-faces';
-        lastYellowResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'yellow-die', 'yellow', i, pinnedYellow[i])));
+        lastYellowResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'yellow-die', 'yellow', i, selectedYellow[i])));
         group.appendChild(faces);
         outEl.appendChild(group);
     }
@@ -252,9 +253,9 @@ function renderResults() {
     totals.innerHTML = `Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span>`;
     outEl.appendChild(totals);
 
-    outEl.classList.toggle('has-pinned', hasPinnedDice());
+    outEl.classList.toggle('has-selected', hasSelectedDice());
     outEl.querySelectorAll('.result-die').forEach(el => {
-        el.addEventListener('click', () => togglePin(el.dataset.color, Number(el.dataset.idx)));
+        el.addEventListener('click', () => toggleSelect(el.dataset.color, Number(el.dataset.idx)));
     });
 }
 
@@ -263,20 +264,20 @@ function roll() {
     const yellow = rollDice(yellowFaces, yellowCount);
     lastGreenResults = green.results;
     lastYellowResults = yellow.results;
-    pinnedGreen = new Array(greenCount).fill(false);
-    pinnedYellow = new Array(yellowCount).fill(false);
+    selectedGreen = new Array(greenCount).fill(false);
+    selectedYellow = new Array(yellowCount).fill(false);
     renderResults();
     updateButtonState();
 }
 
 function reroll() {
     for (let i = 0; i < lastGreenResults.length; i++) {
-        if (!pinnedGreen[i]) lastGreenResults[i] = greenFaces[Math.floor(Math.random() * 6)];
+        if (selectedGreen[i]) lastGreenResults[i] = greenFaces[Math.floor(Math.random() * 6)];
     }
     for (let i = 0; i < lastYellowResults.length; i++) {
-        if (!pinnedYellow[i]) lastYellowResults[i] = yellowFaces[Math.floor(Math.random() * 6)];
+        if (selectedYellow[i]) lastYellowResults[i] = yellowFaces[Math.floor(Math.random() * 6)];
     }
-    renderResults();
+    deselectAll();
 }
 
 function calcMean(faces) {
