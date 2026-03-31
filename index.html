@@ -43,6 +43,18 @@
         .dice-group { margin-bottom: 10px; }
         .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 
+        /* Reroll split button */
+        #btn-area { display: flex; gap: 4px; }
+        #btn-area button { width: auto; }
+        #roll-btn { flex: 1; }
+        #reroll-btn { flex: 17 1 0; }
+        #deselect-btn { flex: 3 1 0; }
+
+        /* Result dice interaction */
+        .result-die { cursor: pointer; transition: box-shadow 0.15s ease, opacity 0.15s ease; }
+        .result-die.selected { box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,0.4); }
+        .has-selected .result-die:not(.selected) { opacity: 0.45; }
+
         /* Mean / expected-value field */
         .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; height: 72px; overflow-y: auto; }
         .median-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
@@ -60,7 +72,7 @@
         <div class="selector-group">
             <div class="die-selector" id="y-selector"></div>
         </div>
-        <button onclick="roll()">ROLL DICE</button>
+        <div id="btn-area"><button id="roll-btn">ROLL DICE</button></div>
         <div id="out" class="results">Click dice above to select, then roll!</div>
     </div>
     <div id="median" class="median-stats"></div>
@@ -86,6 +98,10 @@ const yellowFaces = [
 
 let greenCount = 0;
 let yellowCount = 0;
+let lastGreenResults = [];
+let lastYellowResults = [];
+let selectedGreen = [];
+let selectedYellow = [];
 
 function faceContent(face) {
     const total = (face.stars || 0) + (face.masks || 0);
@@ -149,26 +165,119 @@ function rollDice(faces, count) {
     return {stars, masks, weighted, results};
 }
 
+function hasSelectedDice() {
+    return selectedGreen.some(Boolean) || selectedYellow.some(Boolean);
+}
+
+function toggleSelect(color, idx) {
+    if (color === 'green') {
+        selectedGreen[idx] = !selectedGreen[idx];
+    } else {
+        selectedYellow[idx] = !selectedYellow[idx];
+    }
+    renderResults();
+    updateButtonState();
+}
+
+function deselectAll() {
+    selectedGreen.fill(false);
+    selectedYellow.fill(false);
+    renderResults();
+    updateButtonState();
+}
+
+function updateButtonState() {
+    const btnArea = document.getElementById('btn-area');
+    btnArea.innerHTML = '';
+    if (hasSelectedDice()) {
+        const rerollBtn = document.createElement('button');
+        rerollBtn.id = 'reroll-btn';
+        rerollBtn.textContent = 'REROLL SELECTED';
+        rerollBtn.addEventListener('click', reroll);
+        const deselectBtn = document.createElement('button');
+        deselectBtn.id = 'deselect-btn';
+        deselectBtn.textContent = '✕';
+        deselectBtn.addEventListener('click', deselectAll);
+        btnArea.appendChild(rerollBtn);
+        btnArea.appendChild(deselectBtn);
+    } else {
+        const rollBtn = document.createElement('button');
+        rollBtn.id = 'roll-btn';
+        rollBtn.textContent = 'ROLL DICE';
+        rollBtn.addEventListener('click', roll);
+        btnArea.appendChild(rollBtn);
+    }
+}
+
+function makeDieElement(face, dieClass, color, idx, selected) {
+    const {total, html} = faceContent(face);
+    const extraClass = face.weighted ? ' weighted-face' : '';
+    const div = document.createElement('div');
+    div.className = `die ${dieClass} face-${total}${extraClass}${selected ? ' selected' : ''} result-die`;
+    div.innerHTML = html;
+    div.dataset.color = color;
+    div.dataset.idx = idx;
+    return div;
+}
+
+function renderResults() {
+    let stars = 0, masks = 0, weighted = 0;
+    lastGreenResults.forEach(f => { stars += f.stars||0; masks += f.masks||0; weighted += f.weighted||0; });
+    lastYellowResults.forEach(f => { stars += f.stars||0; masks += f.masks||0; });
+    const weightedStars = stars + weighted;
+
+    const outEl = document.getElementById('out');
+    outEl.innerHTML = '';
+
+    if (lastGreenResults.length > 0) {
+        const group = document.createElement('div');
+        group.className = 'dice-group';
+        const faces = document.createElement('div');
+        faces.className = 'dice-faces';
+        lastGreenResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'green-die', 'green', i, selectedGreen[i])));
+        group.appendChild(faces);
+        outEl.appendChild(group);
+    }
+    if (lastYellowResults.length > 0) {
+        const group = document.createElement('div');
+        group.className = 'dice-group';
+        const faces = document.createElement('div');
+        faces.className = 'dice-faces';
+        lastYellowResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'yellow-die', 'yellow', i, selectedYellow[i])));
+        group.appendChild(faces);
+        outEl.appendChild(group);
+    }
+
+    const totals = document.createElement('div');
+    totals.className = 'totals';
+    totals.innerHTML = `Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span>`;
+    outEl.appendChild(totals);
+
+    outEl.classList.toggle('has-selected', hasSelectedDice());
+    outEl.querySelectorAll('.result-die').forEach(el => {
+        el.addEventListener('click', () => toggleSelect(el.dataset.color, Number(el.dataset.idx)));
+    });
+}
+
 function roll() {
     const green = rollDice(greenFaces, greenCount);
     const yellow = rollDice(yellowFaces, yellowCount);
-    const stars = green.stars + yellow.stars;
-    const masks = green.masks + yellow.masks;
-    const weightedStars = stars + green.weighted;
+    lastGreenResults = green.results;
+    lastYellowResults = yellow.results;
+    selectedGreen = new Array(greenCount).fill(false);
+    selectedYellow = new Array(yellowCount).fill(false);
+    renderResults();
+    updateButtonState();
+}
 
-    let html = '';
-    if (green.results.length > 0) {
-        html += '<div class="dice-group"><div class="dice-faces">';
-        green.results.forEach(face => { html += dieFaceHTML(face, 'green-die'); });
-        html += '</div></div>';
+function reroll() {
+    for (let i = 0; i < lastGreenResults.length; i++) {
+        if (selectedGreen[i]) lastGreenResults[i] = greenFaces[Math.floor(Math.random() * 6)];
     }
-    if (yellow.results.length > 0) {
-        html += '<div class="dice-group"><div class="dice-faces">';
-        yellow.results.forEach(face => { html += dieFaceHTML(face, 'yellow-die'); });
-        html += '</div></div>';
+    for (let i = 0; i < lastYellowResults.length; i++) {
+        if (selectedYellow[i]) lastYellowResults[i] = yellowFaces[Math.floor(Math.random() * 6)];
     }
-    html += `<div class="totals">Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span></div>`;
-    document.getElementById('out').innerHTML = html;
+    deselectAll();
 }
 
 function calcMean(faces) {
@@ -200,6 +309,7 @@ function updateMedian() {
 
 buildSelectors();
 updateMedian();
+document.getElementById('roll-btn').addEventListener('click', roll);
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW registration failed:', err));
