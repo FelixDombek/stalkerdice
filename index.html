@@ -68,6 +68,7 @@
         <h2>Dice Roller</h2>
         <div class="selector-group">
             <div class="die-selector" id="g-selector"></div>
+            <div class="die-selector" id="g-selector-2"></div>
         </div>
         <div class="selector-group">
             <div class="die-selector" id="y-selector"></div>
@@ -118,11 +119,12 @@ function dieFaceHTML(face, dieClass) {
 }
 
 function buildSelectors() {
-    buildSelector(greenFaces, 'green-die', 'g-selector', 'green');
-    buildSelector(yellowFaces, 'yellow-die', 'y-selector', 'yellow');
+    buildSelector(greenFaces, 'green-die', 'g-selector', 'green', 0);
+    buildSelector(greenFaces, 'green-die', 'g-selector-2', 'green', 6);
+    buildSelector(yellowFaces, 'yellow-die', 'y-selector', 'yellow', 0);
 }
 
-function buildSelector(faces, dieClass, containerId, color) {
+function buildSelector(faces, dieClass, containerId, color, offset) {
     const container = document.getElementById(containerId);
     faces.forEach((face, idx) => {
         const {total, html} = faceContent(face);
@@ -130,7 +132,7 @@ function buildSelector(faces, dieClass, containerId, color) {
         const div = document.createElement('div');
         div.className = `die ${dieClass} face-${total}${extraClass}`;
         div.innerHTML = html;
-        div.addEventListener('click', () => selectDice(color, idx + 1));
+        div.addEventListener('click', () => selectDice(color, idx + 1 + offset));
         container.appendChild(div);
     });
 }
@@ -138,17 +140,18 @@ function buildSelector(faces, dieClass, containerId, color) {
 function selectDice(color, pos) {
     if (color === 'green') {
         greenCount = (greenCount === pos) ? 0 : pos;
-        updateSelector('g-selector', greenCount);
+        updateSelector('g-selector', greenCount, 0);
+        updateSelector('g-selector-2', greenCount, 6);
     } else {
         yellowCount = (yellowCount === pos) ? 0 : pos;
-        updateSelector('y-selector', yellowCount);
+        updateSelector('y-selector', yellowCount, 0);
     }
     updateMedian();
 }
 
-function updateSelector(containerId, count) {
+function updateSelector(containerId, count, offset) {
     document.querySelectorAll(`#${containerId} .die`).forEach((die, i) => {
-        die.classList.toggle('selected', i + 1 <= count);
+        die.classList.toggle('selected', i + 1 + offset <= count);
     });
 }
 
