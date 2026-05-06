@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Dice Roller</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4caf50">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #2d2d2d; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 450px; text-align: center; overflow: hidden; }
+        .container-inner { padding: 2rem; }
+        h2 { margin-top: 0; color: #4caf50; }
+
+        /* Die selectors */
+        .selector-group { margin-bottom: 14px; }
+        .selector-label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; text-align: left; }
+        .die-selector { display: flex; justify-content: center; gap: 5px; align-items: center; padding: 4px 0; }
+
+        /* Base die (roll results) */
+        .die { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 9px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); line-height: 1; }
+        .green-die { background: #2e7d32; color: #fff; }
+        .yellow-die { background: #f9a825; color: #1a1a1a; }
+        .face-0 { font-size: 1.4rem; }
+        .face-1 { font-size: 1.8rem; }
+        .face-2 { font-size: 1.1rem; }
+        .face-3 span { display: block; font-size: 0.85rem; line-height: 1.4; }
+        .weighted-face { background: linear-gradient(#fff,#fff) 8px 8px / calc(100% - 16px) calc(100% - 16px) no-repeat, #2e7d32; color: #1b5e20; }
+
+        /* Selector dice – always occupy full slot; scale from center */
+        .die-selector .die { cursor: pointer; transform: scale(0.5); transition: transform 0.12s ease; touch-action: manipulation; }
+        .die-selector .die.selected { transform: scale(1); }
+
+        button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #45a049; transform: translateY(-2px); }
+
+        /* Roll results */
+        .results { margin-top: 25px; font-size: 1.2rem; background: #111; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; height: 200px; overflow-y: auto; }
+        .stat-val { font-weight: bold; color: #ffcc00; }
+        .weighted { color: #d4890a; font-size: 1.05rem; }
+        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
+        .dice-group { margin-bottom: 10px; }
+        .dice-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+
+        /* Reroll split button */
+        #btn-area { display: flex; gap: 4px; }
+        #btn-area button { width: auto; }
+        #roll-btn { flex: 1; }
+        #reroll-btn { flex: 17 1 0; }
+        #deselect-btn { flex: 3 1 0; }
+
+        /* Result dice interaction */
+        .result-die { cursor: pointer; transition: box-shadow 0.15s ease, opacity 0.15s ease; }
+        .result-die.selected { box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,0.4); }
+        .has-selected .result-die:not(.selected) { opacity: 0.45; }
+
+        /* Mean / expected-value field */
+        .median-stats { background: #0c0c0c; padding: 14px 20px; border-top: 1px solid #1e1e1e; font-size: 1.05rem; color: #666; height: 72px; overflow-y: auto; }
+        .median-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .median-stats .stat-val { color: #b07a10; }
+        .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="container-inner">
+        <h2>Dice Roller</h2>
+        <div class="selector-group">
+            <div class="die-selector" id="g-selector"></div>
+            <div class="die-selector" id="g-selector-2"></div>
+        </div>
+        <div class="selector-group">
+            <div class="die-selector" id="y-selector"></div>
+        </div>
+        <div id="btn-area"><button id="roll-btn">ROLL DICE</button></div>
+        <div id="out" class="results">Click dice above to select, then roll!</div>
+    </div>
+    <div id="median" class="median-stats"></div>
+</div>
+
+<script>
+const greenFaces = [
+    {stars: 2, weighted: 2},
+    {stars: 3},
+    {stars: 2},
+    {stars: 1},
+    {stars: 1},
+    {}
+];
+const yellowFaces = [
+    {masks: 2},
+    {stars: 1, masks: 1},
+    {stars: 1, masks: 1},
+    {stars: 2},
+    {masks: 1},
+    {stars: 1}
+];
+
+let greenCount = 0;
+let yellowCount = 0;
+let lastGreenResults = [];
+let lastYellowResults = [];
+let selectedGreen = [];
+let selectedYellow = [];
+
+function faceContent(face) {
+    const total = (face.stars || 0) + (face.masks || 0);
+    const symbols = '★'.repeat(face.stars || 0) + '☠'.repeat(face.masks || 0);
+    if (total === 0) return {total, html: ''};
+    if (total === 3) return {total, html: `<span>${symbols.slice(0, 2)}</span><span>${symbols.slice(2)}</span>`};
+    return {total, html: symbols};
+}
+
+function dieFaceHTML(face, dieClass) {
+    const {total, html} = faceContent(face);
+    const extraClass = face.weighted ? ' weighted-face' : '';
+    return `<div class="die ${dieClass} face-${total}${extraClass}">${html}</div>`;
+}
+
+function buildSelectors() {
+    buildSelector(greenFaces, 'green-die', 'g-selector', 'green', 0);
+    buildSelector(greenFaces, 'green-die', 'g-selector-2', 'green', 6);
+    buildSelector(yellowFaces, 'yellow-die', 'y-selector', 'yellow', 0);
+}
+
+function buildSelector(faces, dieClass, containerId, color, offset) {
+    const container = document.getElementById(containerId);
+    faces.forEach((face, idx) => {
+        const {total, html} = faceContent(face);
+        const extraClass = face.weighted ? ' weighted-face' : '';
+        const div = document.createElement('div');
+        div.className = `die ${dieClass} face-${total}${extraClass}`;
+        div.innerHTML = html;
+        div.addEventListener('click', () => selectDice(color, idx + 1 + offset));
+        container.appendChild(div);
+    });
+}
+
+function selectDice(color, pos) {
+    if (color === 'green') {
+        greenCount = (greenCount === pos) ? 0 : pos;
+        updateSelector('g-selector', greenCount, 0);
+        updateSelector('g-selector-2', greenCount, 6);
+    } else {
+        yellowCount = (yellowCount === pos) ? 0 : pos;
+        updateSelector('y-selector', yellowCount, 0);
+    }
+    updateMedian();
+}
+
+function updateSelector(containerId, count, offset) {
+    document.querySelectorAll(`#${containerId} .die`).forEach((die, i) => {
+        die.classList.toggle('selected', i + 1 + offset <= count);
+    });
+}
+
+function rollDice(faces, count) {
+    let stars = 0, masks = 0, weighted = 0;
+    const results = [];
+    for (let i = 0; i < count; i++) {
+        const face = faces[Math.floor(Math.random() * 6)];
+        stars += face.stars || 0;
+        masks += face.masks || 0;
+        weighted += face.weighted || 0;
+        results.push(face);
+    }
+    return {stars, masks, weighted, results};
+}
+
+function hasSelectedDice() {
+    return selectedGreen.some(Boolean) || selectedYellow.some(Boolean);
+}
+
+function toggleSelect(color, idx) {
+    if (color === 'green') {
+        selectedGreen[idx] = !selectedGreen[idx];
+    } else {
+        selectedYellow[idx] = !selectedYellow[idx];
+    }
+    renderResults();
+    updateButtonState();
+}
+
+function deselectAll() {
+    selectedGreen.fill(false);
+    selectedYellow.fill(false);
+    renderResults();
+    updateButtonState();
+}
+
+function updateButtonState() {
+    const btnArea = document.getElementById('btn-area');
+    btnArea.innerHTML = '';
+    if (hasSelectedDice()) {
+        const rerollBtn = document.createElement('button');
+        rerollBtn.id = 'reroll-btn';
+        rerollBtn.textContent = 'REROLL SELECTED';
+        rerollBtn.addEventListener('click', reroll);
+        const deselectBtn = document.createElement('button');
+        deselectBtn.id = 'deselect-btn';
+        deselectBtn.textContent = '✕';
+        deselectBtn.addEventListener('click', deselectAll);
+        btnArea.appendChild(rerollBtn);
+        btnArea.appendChild(deselectBtn);
+    } else {
+        const rollBtn = document.createElement('button');
+        rollBtn.id = 'roll-btn';
+        rollBtn.textContent = 'ROLL DICE';
+        rollBtn.addEventListener('click', roll);
+        btnArea.appendChild(rollBtn);
+    }
+}
+
+function makeDieElement(face, dieClass, color, idx, selected) {
+    const {total, html} = faceContent(face);
+    const extraClass = face.weighted ? ' weighted-face' : '';
+    const div = document.createElement('div');
+    div.className = `die ${dieClass} face-${total}${extraClass}${selected ? ' selected' : ''} result-die`;
+    div.innerHTML = html;
+    div.dataset.color = color;
+    div.dataset.idx = idx;
+    return div;
+}
+
+function renderResults() {
+    let stars = 0, masks = 0, weighted = 0;
+    lastGreenResults.forEach(f => { stars += f.stars||0; masks += f.masks||0; weighted += f.weighted||0; });
+    lastYellowResults.forEach(f => { stars += f.stars||0; masks += f.masks||0; });
+    const weightedStars = stars + weighted;
+
+    const outEl = document.getElementById('out');
+    outEl.innerHTML = '';
+
+    if (lastGreenResults.length > 0) {
+        const group = document.createElement('div');
+        group.className = 'dice-group';
+        const faces = document.createElement('div');
+        faces.className = 'dice-faces';
+        lastGreenResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'green-die', 'green', i, selectedGreen[i])));
+        group.appendChild(faces);
+        outEl.appendChild(group);
+    }
+    if (lastYellowResults.length > 0) {
+        const group = document.createElement('div');
+        group.className = 'dice-group';
+        const faces = document.createElement('div');
+        faces.className = 'dice-faces';
+        lastYellowResults.forEach((face, i) => faces.appendChild(makeDieElement(face, 'yellow-die', 'yellow', i, selectedYellow[i])));
+        group.appendChild(faces);
+        outEl.appendChild(group);
+    }
+
+    const totals = document.createElement('div');
+    totals.className = 'totals';
+    totals.innerHTML = `Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span><br>Gas Masks: <span class="stat-val">${masks}</span>`;
+    outEl.appendChild(totals);
+
+    outEl.classList.toggle('has-selected', hasSelectedDice());
+    outEl.querySelectorAll('.result-die').forEach(el => {
+        el.addEventListener('click', () => toggleSelect(el.dataset.color, Number(el.dataset.idx)));
+    });
+}
+
+function roll() {
+    const green = rollDice(greenFaces, greenCount);
+    const yellow = rollDice(yellowFaces, yellowCount);
+    lastGreenResults = green.results;
+    lastYellowResults = yellow.results;
+    selectedGreen = new Array(greenCount).fill(false);
+    selectedYellow = new Array(yellowCount).fill(false);
+    renderResults();
+    updateButtonState();
+}
+
+function reroll() {
+    for (let i = 0; i < lastGreenResults.length; i++) {
+        if (selectedGreen[i]) lastGreenResults[i] = greenFaces[Math.floor(Math.random() * 6)];
+    }
+    for (let i = 0; i < lastYellowResults.length; i++) {
+        if (selectedYellow[i]) lastYellowResults[i] = yellowFaces[Math.floor(Math.random() * 6)];
+    }
+    deselectAll();
+}
+
+function calcMean(faces) {
+    const n = faces.length;
+    return {
+        stars:    faces.reduce((s, f) => s + (f.stars    || 0), 0) / n,
+        masks:    faces.reduce((s, f) => s + (f.masks    || 0), 0) / n,
+        weighted: faces.reduce((s, f) => s + (f.weighted || 0), 0) / n
+    };
+}
+
+function updateMedian() {
+    const el = document.getElementById('median');
+    if (greenCount === 0 && yellowCount === 0) {
+        el.innerHTML = '<div class="median-label">Select dice above to see expected values</div>';
+        return;
+    }
+    const gm = calcMean(greenFaces);
+    const ym = calcMean(yellowFaces);
+    const stars    = greenCount * gm.stars  + yellowCount * ym.stars;
+    const masks    = yellowCount * ym.masks;
+    const wStars   = stars + greenCount * gm.weighted;
+    el.innerHTML = `
+        <div class="median-label">Mean per roll</div>
+        Stars: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span><br>
+        Gas Masks: <span class="stat-val">${masks.toFixed(1)}</span>
+    `;
+}
+
+buildSelectors();
+updateMedian();
+document.getElementById('roll-btn').addEventListener('click', roll);
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW registration failed:', err));
+}
+</script>
+</body>
+</html>
