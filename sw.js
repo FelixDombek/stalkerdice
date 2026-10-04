@@ -1,4 +1,4 @@
-const CACHE = 'stalkerdice-v1';
+const CACHE = 'stalkerdice-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
