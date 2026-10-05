@@ -41,7 +41,7 @@
         .results { font-size: 1.2rem; background: #111; padding: 15px; height: 200px; overflow-y: auto; }
         .stat-val { font-weight: bold; color: #ffcc00; }
         .weighted { color: #d4890a; font-size: 1.05rem; }
-        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
+        .totals { white-space: nowrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
         .dice-group { margin-bottom: 10px; }
         .dice-faces { display: grid; grid-template-columns: repeat(6, minmax(0, 52px)); justify-content: center; gap: 6px; }
 
@@ -58,13 +58,14 @@
         .has-selected .result-die:not(.selected) { opacity: 0.45; }
 
         /* Mean / expected-value field */
-        .median-stats { background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 48px; overflow-y: auto; }
+        .median-stats { white-space: nowrap; background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 48px; overflow-y: auto; }
         .median-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
         .median-stats .stat-val { color: #b07a10; }
         .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
             @media (max-width: 450px) {
-            body { align-items: flex-start; background: #2d2d2d; }
-            .container { border-radius: 0; box-shadow: none; }
+            html, body { background: #2d2d2d; margin: 0; padding: 0; }
+            body { display: block; min-height: 100vh; }
+            .container { width: 100%; border-radius: 0; box-shadow: none; }
         }
     </style>
 </head>
