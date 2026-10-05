@@ -58,8 +58,8 @@
         .has-selected .result-die:not(.selected) { opacity: 0.45; }
 
         /* Mean / expected-value field */
-        .median-stats { background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 72px; overflow-y: auto; }
-        .median-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .median-stats { background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 48px; overflow-y: auto; }
+        .median-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
         .median-stats .stat-val { color: #b07a10; }
         .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
             @media (max-width: 450px) {
@@ -259,7 +259,7 @@ function renderResults() {
 
     const totals = document.createElement('div');
     totals.className = 'totals';
-    totals.innerHTML = `Stars: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span> &nbsp; Gas Masks: <span class="stat-val">${masks}</span>`;
+    totals.innerHTML = `★: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span> · ☠: <span class="stat-val">${masks}</span>`;
     outEl.appendChild(totals);
 
     outEl.classList.toggle('has-selected', hasSelectedDice());
@@ -310,9 +310,8 @@ function updateMedian() {
     const masks    = yellowCount * ym.masks;
     const wStars   = stars + greenCount * gm.weighted;
     el.innerHTML = `
-        <div class="median-label">Mean per roll</div>
-        Stars: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span> &nbsp;
-        Gas Masks: <span class="stat-val">${masks.toFixed(1)}</span>
+        <span class="median-label">Mean per roll</span> &nbsp;
+        ★: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span> · ☠: <span class="stat-val">${masks.toFixed(1)}</span>
     `;
 }
 
