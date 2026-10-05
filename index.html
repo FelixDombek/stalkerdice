@@ -10,8 +10,8 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: #2d2d2d; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 450px; max-width: 100%; text-align: center; overflow: hidden; }
-        .title-section { background: #000; padding: 0.8rem 1rem; }
-        .input-section { background: #2d2d2d; padding: 1rem 1.2rem; }
+        .title-section { background: #2d2d2d; padding: 0.8rem 1rem; }
+        .input-section { background: #2d2d2d; padding: 0 1.2rem 1rem; }
         h2 { margin: 0; color: #4caf50; }
 
         /* Die selectors */
@@ -58,7 +58,7 @@
         .has-selected .result-die:not(.selected) { opacity: 0.45; }
 
         /* Mean / expected-value field */
-        .median-stats { white-space: nowrap; background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 48px; overflow-y: auto; }
+        .median-stats { white-space: nowrap; padding: 10px 0 0; font-size: 1.05rem; color: #999; }
         .median-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
         .median-stats .stat-val { color: #b07a10; }
         .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
@@ -81,9 +81,9 @@
             <div class="die-selector" id="y-selector"></div>
         </div>
         <div id="btn-area"><button id="roll-btn">ROLL DICE</button></div>
+        <div id="median" class="median-stats"></div>
     </div>
     <div id="out" class="results">Click dice above to select, then roll!</div>
-    <div id="median" class="median-stats"></div>
 </div>
 
 <script>
