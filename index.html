@@ -10,8 +10,8 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: #2d2d2d; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 450px; max-width: 100%; text-align: center; overflow: hidden; }
-        .title-section { background: #000; padding: 0.8rem 1rem; }
-        .input-section { background: #2d2d2d; padding: 1rem 1.2rem; }
+        .title-section { background: #2d2d2d; padding: 0.8rem 1rem; }
+        .input-section { background: #2d2d2d; padding: 0 1.2rem 1rem; }
         h2 { margin: 0; color: #4caf50; }
 
         /* Die selectors */
@@ -38,10 +38,10 @@
         button:hover { background: #45a049; transform: translateY(-2px); }
 
         /* Roll results */
-        .results { font-size: 1.2rem; background: #111; padding: 15px; height: 200px; overflow-y: auto; }
+        .results { font-size: 1.2rem; background: #111; padding: 15px; min-height: 200px; }
         .stat-val { font-weight: bold; color: #ffcc00; }
         .weighted { color: #d4890a; font-size: 1.05rem; }
-        .totals { margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
+        .totals { white-space: nowrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; }
         .dice-group { margin-bottom: 10px; }
         .dice-faces { display: grid; grid-template-columns: repeat(6, minmax(0, 52px)); justify-content: center; gap: 6px; }
 
@@ -58,13 +58,14 @@
         .has-selected .result-die:not(.selected) { opacity: 0.45; }
 
         /* Mean / expected-value field */
-        .median-stats { background: #2d2d2d; padding: 14px 20px; font-size: 1.05rem; color: #999; height: 48px; overflow-y: auto; }
+        .median-stats { white-space: nowrap; padding: 10px 0 0; font-size: 1.05rem; color: #999; }
         .median-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
         .median-stats .stat-val { color: #b07a10; }
         .median-stats .weighted { color: #8a6010; font-size: 0.95rem; }
             @media (max-width: 450px) {
-            body { align-items: flex-start; background: #2d2d2d; }
-            .container { border-radius: 0; box-shadow: none; }
+            html, body { background: #2d2d2d; margin: 0; padding: 0; }
+            body { display: block; min-height: 100vh; }
+            .container { width: 100%; border-radius: 0; box-shadow: none; }
         }
     </style>
 </head>
@@ -80,9 +81,9 @@
             <div class="die-selector" id="y-selector"></div>
         </div>
         <div id="btn-area"><button id="roll-btn">ROLL DICE</button></div>
+        <div id="median" class="median-stats"></div>
     </div>
     <div id="out" class="results">Click dice above to select, then roll!</div>
-    <div id="median" class="median-stats"></div>
 </div>
 
 <script>
@@ -259,7 +260,7 @@ function renderResults() {
 
     const totals = document.createElement('div');
     totals.className = 'totals';
-    totals.innerHTML = `★: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span> · ☠: <span class="stat-val">${masks}</span>`;
+    totals.innerHTML = `★: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span>&nbsp;&nbsp;&nbsp;☠: <span class="stat-val">${masks}</span>`;
     outEl.appendChild(totals);
 
     outEl.classList.toggle('has-selected', hasSelectedDice());
@@ -310,8 +311,8 @@ function updateMedian() {
     const masks    = yellowCount * ym.masks;
     const wStars   = stars + greenCount * gm.weighted;
     el.innerHTML = `
-        <span class="median-label">Mean per roll</span> &nbsp;
-        ★: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span> · ☠: <span class="stat-val">${masks.toFixed(1)}</span>
+        <span class="median-label">Mean per roll:</span> 
+        ★: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span>&nbsp;&nbsp;&nbsp;☠: <span class="stat-val">${masks.toFixed(1)}</span>
     `;
 }
 
