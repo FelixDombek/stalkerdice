@@ -260,7 +260,7 @@ function renderResults() {
 
     const totals = document.createElement('div');
     totals.className = 'totals';
-    totals.innerHTML = `★: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span> · ☠: <span class="stat-val">${masks}</span>`;
+    totals.innerHTML = `★: <span class="stat-val">${stars}</span> <span class="weighted">(${weightedStars})</span>&nbsp;&nbsp;&nbsp;☠: <span class="stat-val">${masks}</span>`;
     outEl.appendChild(totals);
 
     outEl.classList.toggle('has-selected', hasSelectedDice());
@@ -312,7 +312,7 @@ function updateMedian() {
     const wStars   = stars + greenCount * gm.weighted;
     el.innerHTML = `
         <span class="median-label">Mean per roll:</span> 
-        ★: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span> · ☠: <span class="stat-val">${masks.toFixed(1)}</span>
+        ★: <span class="stat-val">${stars.toFixed(1)}</span> <span class="weighted">(${wStars.toFixed(1)})</span>&nbsp;&nbsp;&nbsp;☠: <span class="stat-val">${masks.toFixed(1)}</span>
     `;
 }
 
