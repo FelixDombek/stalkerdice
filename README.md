@@ -3,7 +3,7 @@ Dice Roller for the STALKER board game.
 
 ▶ **[Launch](https://felixdombek.github.io/stalkerdice/)**
 
-![App screenshot: 3 green dice and 2 yellow dice selected and rolled, showing results and totals](screenshot.png)
+![App screenshot: 8 green dice and 4 yellow dice selected and rolled, showing results and totals](screenshot.png)
 
 ## Features
 
